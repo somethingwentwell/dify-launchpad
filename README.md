@@ -28,7 +28,7 @@ Make sure you can access your Dify console (usually at `http://your-domain/conso
 
 1. **Clone and Configure**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/somethingwentwell/dify-launchpad
    cd dify-launchpad
    cp .env.example .env
    ```
