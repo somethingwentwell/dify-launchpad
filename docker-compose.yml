@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  dify-launchpad:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: dify-launchpad
+    ports:
+      - "${LAUNCHPAD_PORT:-3000}:3000"
+    environment:
+      # Production environment
+      - NODE_ENV=production
+      - EDITION=SELF_HOSTED
+      - DEPLOY_ENV=PRODUCTION
+      - PORT=3000
+      - NEXT_TELEMETRY_DISABLED=1
+      
+      # API endpoints - Configure these in your .env file
+      - CONSOLE_API_URL=${DIFY_BACKEND_URL:-http://127.0.0.1:5001}
+      - APP_API_URL=${DIFY_BACKEND_URL:-http://127.0.0.1:5001}
+      - NEXT_PUBLIC_API_PREFIX=${DIFY_BACKEND_URL:-http://127.0.0.1:5001}/console/api
+      - NEXT_PUBLIC_PUBLIC_API_PREFIX=${DIFY_BACKEND_URL:-http://127.0.0.1:5001}/api
+      
+      # App base URL - Configure this in your .env file
+      - NEXT_PUBLIC_APP_BASE_URL=${DIFY_APP_BASE_URL:-http://127.0.0.1}
+      
+      # Marketplace (optional)
+      - MARKETPLACE_API_URL=${MARKETPLACE_API_URL:-https://marketplace.dify.ai}
+      - MARKETPLACE_URL=${MARKETPLACE_URL:-https://marketplace.dify.ai}
+      - NEXT_PUBLIC_MARKETPLACE_API_PREFIX=${MARKETPLACE_API_URL:-https://marketplace.dify.ai}/api/v1
+      - NEXT_PUBLIC_MARKETPLACE_URL_PREFIX=${MARKETPLACE_URL:-https://marketplace.dify.ai}
+      
+      # Feature toggles
+      - NEXT_PUBLIC_UPLOAD_IMAGE_AS_ICON=false
+      - NEXT_PUBLIC_ALLOW_UNSAFE_DATA_SCHEME=false
+      - NEXT_PUBLIC_ENABLE_WEBSITE_JINAREADER=true
+      - NEXT_PUBLIC_ENABLE_WEBSITE_FIRECRAWL=true
+      - NEXT_PUBLIC_ENABLE_WEBSITE_WATERCRAWL=true
+      
+      # Performance settings
+      - NEXT_PUBLIC_TEXT_GENERATION_TIMEOUT_MS=60000
+      - NEXT_PUBLIC_TOP_K_MAX_VALUE=10
+      - NEXT_PUBLIC_INDEXING_MAX_SEGMENTATION_TOKENS_LENGTH=4000
+      - NEXT_PUBLIC_LOOP_NODE_MAX_COUNT=100
+      - NEXT_PUBLIC_MAX_TOOLS_NUM=10
+      - NEXT_PUBLIC_MAX_PARALLEL_LIMIT=10
+      - NEXT_PUBLIC_MAX_ITERATIONS_NUM=99
+      - NEXT_PUBLIC_MAX_TREE_DEPTH=50
+      
+    restart: unless-stopped
+    networks:
+      - dify-launchpad-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  dify-launchpad-network:
+    driver: bridge
